@@ -1,8 +1,19 @@
 'use client'
+import Image from 'next/image'
 import { ChangeEvent, useState } from 'react'
 
-export function MediaPicker() {
+type MediaPickerProps = {
+  memory?: {
+    coverUrl: string
+    content: string
+    id: string
+    createdAt: string
+  }
+}
+
+export function MediaPicker({ memory }: MediaPickerProps) {
   const [preview, setPreview] = useState<null | string>(null)
+  const [img, setImg] = useState<undefined | string>(memory?.coverUrl)
 
   function onFileSelected(event: ChangeEvent<HTMLInputElement>) {
     const { files } = event.target
@@ -14,6 +25,7 @@ export function MediaPicker() {
     const previewURL = URL.createObjectURL(files[0])
 
     setPreview(previewURL)
+    setImg('')
   }
 
   return (
@@ -31,6 +43,16 @@ export function MediaPicker() {
         // eslint-disable-next-line
         <img
           src={preview}
+          alt="Preview"
+          className="aspect-video w-full rounded-lg object-cover"
+        />
+      )}
+
+      {img && (
+        <Image
+          width={100}
+          height={100}
+          src={img}
           alt="Preview"
           className="aspect-video w-full rounded-lg object-cover"
         />

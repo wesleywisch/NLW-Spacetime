@@ -17,5 +17,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: '/memories/:path*',
+  matcher: ['/memories/new', '/memories/visualization'],
 }

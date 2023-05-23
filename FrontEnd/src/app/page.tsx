@@ -12,6 +12,19 @@ type MemoryProps = {
   createdAt: string
 }
 
+async function getApi(token?: string) {
+  const response = await api.get('/memories', {
+    headers: {
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+      Expires: '0',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  return response.data
+}
+
 export default async function Home() {
   const isAuthenticated = cookies().has('token')
 
@@ -20,13 +33,7 @@ export default async function Home() {
   }
 
   const token = cookies().get('token')?.value
-  const response = await api.get('/memories', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  const memories: MemoryProps[] = response.data
+  const memories: MemoryProps[] = await getApi(token)
 
   if (memories.length === 0) {
     return <EmptyMemories />

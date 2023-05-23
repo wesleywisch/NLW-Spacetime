@@ -7,19 +7,36 @@ import Cookie from 'js-cookie'
 import { MediaPicker } from './MediaPicker'
 import { api } from '../lib/api'
 
-export function NewMemoryForm() {
+type NewMemoryFormProps = {
+  memory?: {
+    coverUrl: string
+    content: string
+    id: string
+    createdAt: string
+    isPublic: boolean
+    createdBy?: {
+      name: string
+      avatarUrl: string
+      githubLink: string
+    }
+  }
+}
+
+export function NewMemoryForm({ memory }: NewMemoryFormProps) {
   const router = useRouter()
 
   async function handleCreateMemory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const token = Cookie.get('token')
 
     const formData = new FormData(event.currentTarget)
 
     const fileToUpload = formData.get('coverUrl')
+    const verify = formData.get('coverUrl') as { name: string }
 
     let coverUrl = ''
 
-    if (fileToUpload) {
+    if (verify.name && fileToUpload) {
       const uploadFormData = new FormData()
       uploadFormData.set('file', fileToUpload)
 
@@ -28,12 +45,28 @@ export function NewMemoryForm() {
       coverUrl = uploadResponse.data.fileUrl
     }
 
-    const token = Cookie.get('token')
+    if (!memory) {
+      await api.post(
+        '/memories',
+        {
+          coverUrl,
+          content: formData.get('content'),
+          isPublic: formData.get('isPublic'),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
 
-    await api.post(
-      '/memories',
+      return router.push('/')
+    }
+
+    await api.put(
+      `/memories/${memory.id}`,
       {
-        coverUrl,
+        coverUrl: coverUrl || memory.coverUrl,
         content: formData.get('content'),
         isPublic: formData.get('isPublic'),
       },
@@ -43,8 +76,22 @@ export function NewMemoryForm() {
         },
       },
     )
+  }
 
-    router.push('/')
+  async function handleDelete(id: string) {
+    if (id) {
+      const token = Cookie.get('token')
+
+      const response = await api.delete(`/memories/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.status === 200) {
+        router.push('/')
+      }
+    }
   }
 
   return (
@@ -52,7 +99,7 @@ export function NewMemoryForm() {
       <div className="flex items-center gap-4">
         <label
           htmlFor="media"
-          className="flex cursor-pointer items-center gap-1.5 text-sm text-gray-200 hover:text-gray-100"
+          className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-200 hover:text-gray-100 sm:text-sm"
         >
           <Camera className="h-4 w-4" />
           Anexar mídia
@@ -60,7 +107,7 @@ export function NewMemoryForm() {
 
         <label
           htmlFor="isPublic"
-          className="flex items-center gap-1.5 text-sm text-gray-200 hover:text-gray-100"
+          className="flex items-center gap-1.5 text-xs text-gray-200 hover:text-gray-100 sm:text-sm"
         >
           <input
             type="checkbox"
@@ -73,21 +120,34 @@ export function NewMemoryForm() {
         </label>
       </div>
 
-      <MediaPicker />
+      <MediaPicker memory={memory} />
 
       <textarea
         name="content"
+        defaultValue={memory?.content}
         spellCheck={false}
-        className="h-52 w-full resize-none rounded border-0 bg-transparent p-0 text-lg leading-relaxed text-gray-100 placeholder:text-gray-400 focus:ring-0"
+        className="max-h-52 w-full resize-none rounded border-0 bg-transparent p-0 text-lg leading-relaxed text-gray-100 placeholder:text-gray-400 focus:ring-0"
         placeholder="Fique livre para adicionar fotos, vídeos e relatos sobre essa experiência que você quer lembrar para sempre."
       />
 
-      <button
-        type="submit"
-        className="mt-5 inline-block self-end rounded-full bg-green-500 px-5 py-3 font-alt text-sm uppercase leading-none text-black hover:bg-green-600"
-      >
-        Salvar
-      </button>
+      <div className="flex justify-between">
+        <button
+          type="submit"
+          className="mt-5 rounded-full bg-green-500 px-3 py-2 font-alt text-xs uppercase leading-none text-black hover:bg-green-600 md:px-5 md:py-3 md:text-sm"
+        >
+          Salvar
+        </button>
+
+        {memory && (
+          <button
+            onClick={() => handleDelete(memory.id)}
+            type="submit"
+            className="mt-5 rounded-full bg-red-500 px-3 py-2 font-alt text-xs uppercase leading-none text-black hover:bg-red-600 md:px-5 md:py-3 md:text-sm"
+          >
+            Deletar
+          </button>
+        )}
+      </div>
     </form>
   )
 }

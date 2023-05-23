@@ -1,28 +1,39 @@
-import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import Image from 'next/image'
+import { ChevronLeft } from 'lucide-react'
 import dayjs from 'dayjs'
 
 import ptBr from 'dayjs/locale/pt-br'
+import { NewMemoryForm } from './NewMemoryForm'
 dayjs.locale(ptBr)
 
-type MemoryProps = {
-  memory: {
-    coverUrl: string
-    excerpt: string
-    id: string
-    createdAt: string
-    createdBy?: {
-      name: string
-      avatarUrl: string
-      githubLink: string
-    }
+type Memory = {
+  coverUrl: string
+  content: string
+  id: string
+  createdAt: string
+  isPublic: boolean
+  createdBy?: {
+    name: string
+    avatarUrl: string
+    githubLink: string
   }
 }
 
-export function Memory({ memory }: MemoryProps) {
+type MemoryProps = {
+  memory: Memory
+}
+
+export function MemoryVisualization({ memory }: MemoryProps) {
   return (
     <div className="space-y-4">
+      <Link
+        href={!memory.createdBy ? '/' : '/memories/public'}
+        className="mb-10 flex items-center gap-1 text-lg text-gray-200 hover:text-gray-100"
+      >
+        <ChevronLeft className="h-4 w-4" /> Voltar à timeline
+      </Link>
+
       {!memory.createdBy ? (
         <time className="-ml-8 flex items-center gap-2 text-xs text-gray-100 before:h-px before:w-5 before:bg-gray-50 sm:text-sm">
           {dayjs(memory.createdAt).format('D[ de ]MMMM[, ]YYYY')}
@@ -51,29 +62,23 @@ export function Memory({ memory }: MemoryProps) {
         </div>
       )}
 
-      <Image
-        src={memory.coverUrl}
-        alt=""
-        width={592}
-        height={580}
-        className="aspect-video w-full rounded-lg object-cover"
-      />
+      {!memory.createdBy ? (
+        <NewMemoryForm memory={memory} />
+      ) : (
+        <div className="flex flex-1 flex-col gap-2">
+          <Image
+            width={100}
+            height={100}
+            src={memory.coverUrl}
+            alt="Preview"
+            className="aspect-video w-full rounded-lg object-cover"
+          />
 
-      <p className="text-base leading-relaxed text-gray-100 sm:text-lg">
-        {memory.excerpt}
-      </p>
-
-      <Link
-        href={
-          memory.createdBy
-            ? `/memories/public/${memory.id}`
-            : `/memories/visualization/${memory.id}`
-        }
-        className="flex items-center gap-2 text-xs text-gray-200 hover:text-gray-100 sm:text-sm"
-      >
-        Ler mais
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+          <p className="max-h-52 w-full resize-none rounded border-0 bg-transparent p-0 text-lg leading-relaxed text-gray-100 placeholder:text-gray-400 focus:ring-0">
+            {memory?.content}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
