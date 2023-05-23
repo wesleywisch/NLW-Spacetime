@@ -6,7 +6,7 @@ export function Profile() {
   const { name, avatarUrl } = getUser()
 
   return (
-    <div className="flex items-center gap-3 text-left">
+    <div className="text- flex items-center gap-3 py-3">
       <Image
         src={avatarUrl}
         alt={name}
