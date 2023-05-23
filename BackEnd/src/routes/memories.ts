@@ -4,11 +4,65 @@ import { z } from 'zod'
 import { prisma } from "../lib/prisma";
 
 export async function memoriesRoutes(app: FastifyInstance) {
-  app.addHook('preHandler', async (req, res) => {
-    await req.jwtVerify();
+  app.get('/memories/public', async (req, res) => {
+    const memories = await prisma.memory.findMany({
+      where: {
+        isPublic: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      include: {
+        user: true,
+      }
+    });
+
+    return memories.map(memory => {
+      return {
+        id: memory.id,
+        coverUrl: memory.coverUrl,
+        excerpt: memory.content.length >= 115 ? memory.content.substring(0, 115).concat('...') : memory.content,
+        createdAt: memory.createdAt,
+        createdBy: {
+          name: memory.user.name,
+          avatarUrl: memory.user.avatarUrl,
+          githubLink: memory.user.login,
+        },
+      }
+    })
+  })
+
+  app.get('/memories/public/:id', async (req, res) => {
+    const paramsSchema = z.object({
+      id: z.string().uuid(),
+    })
+
+    const { id } = paramsSchema.parse(req.params)
+
+    const memory = await prisma.memory.findMany({
+      where: {
+        id,
+        isPublic: true,
+      },
+      include: {
+        user: true,
+      }
+    });
+
+    return memory.map(memory => {
+      return {
+        id: memory.id,
+        coverUrl: memory.coverUrl,
+        excerpt: memory.content,
+        createdAt: memory.createdAt,
+        createdBy: memory.user.name,
+      }
+    })
   })
 
   app.get('/memories', async (req, res) => {
+    await req.jwtVerify();
+
     const memories = await prisma.memory.findMany({
       where: {
         userId: req.user.sub,
@@ -22,11 +76,15 @@ export async function memoriesRoutes(app: FastifyInstance) {
       return {
         id: memory.id,
         coverUrl: memory.coverUrl,
-        excerpt: memory.content.substring(0, 115).concat('...'),
+        excerpt: memory.content.length >= 115 ? memory.content.substring(0, 115).concat('...') : memory.content,
+        createdAt: memory.createdAt,
       }
     })
   })
+
   app.get('/memories/:id', async (req, res) => {
+    await req.jwtVerify();
+
     const paramsSchema = z.object({
       id: z.string().uuid(),
     })
@@ -46,6 +104,8 @@ export async function memoriesRoutes(app: FastifyInstance) {
     return memory;
   })
   app.post('/memories', async (req, res) => {
+    await req.jwtVerify();
+
     const bodySchema = z.object({
       content: z.string(),
       coverUrl: z.string(),
@@ -66,6 +126,8 @@ export async function memoriesRoutes(app: FastifyInstance) {
     return memory
   })
   app.put('/memories/:id', async (req, res) => {
+    await req.jwtVerify();
+
     const paramsSchema = z.object({
       id: z.string().uuid(),
     })
@@ -103,6 +165,8 @@ export async function memoriesRoutes(app: FastifyInstance) {
     return memory
   })
   app.delete('/memories/:id', async (req, res) => {
+    await req.jwtVerify();
+
     const paramsSchema = z.object({
       id: z.string().uuid(),
     })
