@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ImageBackground } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
-import { SplashScreen, Stack } from 'expo-router'
+import { SplashScreen, Stack, Redirect } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 import { styled } from 'nativewind'
 
@@ -55,8 +55,7 @@ export default function Layout() {
         }}
       >
         <Stack.Screen name="index" redirect={isUserAuthenticated} />
-        <Stack.Screen name="new" />
-        <Stack.Screen name="memories" />
+        {isUserAuthenticated && <Redirect href="/memories" />}
       </Stack>
     </ImageBackground>
   )

@@ -1,15 +1,11 @@
 import { View, TouchableOpacity, ScrollView, Text, Image } from 'react-native'
 import { useState, useEffect } from 'react'
-import { Link, useRouter } from 'expo-router'
+import { Link } from 'expo-router'
 import Icon from '@expo/vector-icons/Feather'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import * as SecureStore from 'expo-secure-store'
 import dayjs from 'dayjs'
 import ptBr from 'dayjs/locale/pt-br'
 
-import NLWLogo from '../src/assets/nlw-spacetime-logo.svg'
-
-import { api } from '../src/lib/api'
+import { api } from '../../../src/lib/api'
 
 dayjs.locale(ptBr)
 
@@ -17,28 +13,14 @@ type MemoryProps = {
   coverUrl: string
   excerpt: string
   id: string
-  createdAt: string
+  memoryDate: string
 }
 
-export default function Memories() {
-  const { bottom, top } = useSafeAreaInsets()
-  const router = useRouter()
-
+export default function MemoriesPublic() {
   const [memories, setMemories] = useState<MemoryProps[]>([])
 
-  async function signOut() {
-    await SecureStore.deleteItemAsync('token')
-    router.push('/')
-  }
-
   async function loadMemories() {
-    const token = await SecureStore.getItemAsync('token')
-
-    const response = await api.get('/memories', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    const response = await api.get('/memories/public')
 
     setMemories(response.data)
   }
@@ -48,36 +30,18 @@ export default function Memories() {
   }, [])
 
   return (
-    <ScrollView
-      className="flex-1"
-      contentContainerStyle={{ paddingBottom: bottom, paddingTop: top }}
-    >
-      <View className="mt-4 flex-row items-center justify-between px-8">
-        <NLWLogo />
-
-        <View className="flex-row gap-2">
-          <TouchableOpacity
-            onPress={signOut}
-            className="h-10 w-10 items-center justify-center rounded-full bg-red-500"
-          >
-            <Icon name="log-out" size={16} color="#000" />
-          </TouchableOpacity>
-
-          <Link href="/new" asChild>
-            <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-green-500">
-              <Icon name="plus" size={16} color="#000" />
-            </TouchableOpacity>
-          </Link>
-        </View>
-      </View>
-
+    <ScrollView className="flex-1">
       <View className="mt-6 space-y-10">
+        <View className="flex items-center">
+          <Text className="text-lg text-gray-200">Memórias públicas</Text>
+        </View>
+
         {memories.map((memory) => (
           <View className="space-y-4" key={memory.id}>
             <View className="flex-row items-center gap-2">
               <View className="h-px w-5 bg-gray-50" />
               <Text className="font-body text-xs text-gray-100">
-                {dayjs(memory.createdAt).format('D[ de ]MMMM[, ]YYYY')}
+                {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
               </Text>
             </View>
 
@@ -94,7 +58,7 @@ export default function Memories() {
                 {memory.excerpt}
               </Text>
 
-              <Link href={`/memories/id`} asChild>
+              <Link href={`/memories/public/${memory.id}`} asChild>
                 <TouchableOpacity className="flex-row items-center gap-2">
                   <Text className="font-body text-sm text-gray-200">
                     Ler mais

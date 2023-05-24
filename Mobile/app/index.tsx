@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
-import { useRouter } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 import { makeRedirectUri, useAuthRequest } from 'expo-auth-session'
 import * as SecureStore from 'expo-secure-store'
 
@@ -78,6 +78,14 @@ export default function App() {
             Cadastrar lembrança
           </Text>
         </TouchableOpacity>
+
+        <Link href="/memories/public" asChild>
+          <TouchableOpacity className="items-center justify-center pt-5">
+            <Text className="text-md text-gray-100">
+              Visualizar memórias públicas
+            </Text>
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <Text className="text-center font-body text-sm leading-relaxed text-gray-200">

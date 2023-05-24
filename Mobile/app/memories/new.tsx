@@ -6,25 +6,29 @@ import {
   TextInput,
   ScrollView,
   Image,
+  Platform,
 } from 'react-native'
+import DateTimePicker from '@react-native-community/datetimepicker'
 import { useState } from 'react'
-import { Link, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 import * as ImagePicker from 'expo-image-picker'
 import Icon from '@expo/vector-icons/Feather'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import dayjs from 'dayjs'
+import ptBr from 'dayjs/locale/pt-br'
 
-import NLWLogo from '../src/assets/nlw-spacetime-logo.svg'
+import { api } from '../../src/lib/api'
 
-import { api } from '../src/lib/api'
+dayjs.locale(ptBr)
 
 export default function NewMemory() {
-  const { bottom, top } = useSafeAreaInsets()
   const router = useRouter()
 
   const [preview, setPreview] = useState<null | string>(null)
   const [isPublic, setIsPublic] = useState(false)
   const [content, setContent] = useState('')
+  const [memoryDate, setMemoryDate] = useState(new Date())
+  const [memoryDateOpen, setMemoryDateOpen] = useState(false)
 
   async function openImagePicker() {
     try {
@@ -70,6 +74,7 @@ export default function NewMemory() {
         content,
         isPublic,
         coverUrl,
+        memoryDate,
       },
       {
         headers: {
@@ -82,20 +87,7 @@ export default function NewMemory() {
   }
 
   return (
-    <ScrollView
-      className="flex-1 px-8"
-      contentContainerStyle={{ paddingBottom: bottom, paddingTop: top }}
-    >
-      <View className="mt-4 flex-row items-center justify-between">
-        <NLWLogo />
-
-        <Link href="/memories" asChild>
-          <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-purple-500">
-            <Icon name="arrow-left" size={16} color="#fff" />
-          </TouchableOpacity>
-        </Link>
-      </View>
-
+    <ScrollView className="flex-1 px-8">
       <View className="mt-6 space-y-6">
         <View className="flex-row items-center gap-2">
           <Switch
@@ -108,6 +100,37 @@ export default function NewMemory() {
           <Text className="font-body text-base text-gray-200">
             Tornar memória pública
           </Text>
+        </View>
+
+        <View>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setMemoryDateOpen(true)}
+            className="flex flex-row items-center justify-center rounded-lg border border-gray-100 p-2"
+          >
+            <Icon name="calendar" size={16} color="#9e9ea0" />
+            <Text className="text-md ml-2 text-gray-100">
+              Data da memória -{' '}
+              <Text className="text-gray-200">
+                {dayjs(memoryDate).format('DD/MM/YYYY')}
+              </Text>
+            </Text>
+          </TouchableOpacity>
+
+          {memoryDateOpen && (
+            <DateTimePicker
+              value={memoryDate}
+              mode={'date'}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(event, value) => {
+                setMemoryDate(value)
+                setMemoryDateOpen(false)
+              }}
+              locale="pt-BR"
+              maximumDate={new Date()}
+              minimumDate={new Date('1899-01-01')}
+            />
+          )}
         </View>
 
         <TouchableOpacity
