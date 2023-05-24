@@ -20,10 +20,11 @@ model Memory {
   id     String @id @default(uuid())
   userId String
 
-  coverUrl  String
-  content   String
-  isPublic  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  coverUrl   String
+  content    String
+  isPublic   Boolean  @default(false)
+  memoryDate DateTime
+  createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }
