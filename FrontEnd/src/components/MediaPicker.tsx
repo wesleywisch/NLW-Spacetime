@@ -7,7 +7,6 @@ type MediaPickerProps = {
     coverUrl: string
     content: string
     id: string
-    createdAt: string
   }
 }
 

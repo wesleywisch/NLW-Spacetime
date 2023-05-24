@@ -7,7 +7,7 @@ type PageMemoriesPublicProps = {
   coverUrl: string
   excerpt: string
   id: string
-  createdAt: string
+  memoryDate: string
 }
 
 export default async function PageMemoriesPublic() {

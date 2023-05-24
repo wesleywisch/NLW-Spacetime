@@ -6,7 +6,7 @@ type MemoryProps = {
   coverUrl: string
   content: string
   id: string
-  createdAt: string
+  memoryDate: string
   isPublic: boolean
   createdBy: {
     name: string

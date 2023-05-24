@@ -8,7 +8,7 @@ type MemoryProps = {
   coverUrl: string
   content: string
   id: string
-  createdAt: string
+  memoryDate: string
   isPublic: boolean
 }
 
@@ -34,7 +34,7 @@ export default async function MemoryId({ params }: { params: { id: string } }) {
     <div className="relative flex flex-col gap-10 p-8">
       <div className="visible absolute bottom-0 left-1 top-0 w-2 bg-stripes lg:invisible" />
 
-      <MemoryVisualization memory={memory} />
+      <MemoryVisualization memory={memory} edit />
     </div>
   )
 }

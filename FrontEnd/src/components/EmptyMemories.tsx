@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export function EmptyMemories({ pagePublic }: { pagePublic: boolean }) {
+export function EmptyMemories({ pagePublic }: { pagePublic?: boolean }) {
   return (
     <div className="flex flex-1 items-center justify-center p-16">
       {!pagePublic ? (

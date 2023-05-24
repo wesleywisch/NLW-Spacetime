@@ -1,18 +1,19 @@
 'use client'
 import { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera } from 'lucide-react'
+import { Camera, CalendarDays } from 'lucide-react'
 import Cookie from 'js-cookie'
 
 import { MediaPicker } from './MediaPicker'
 import { api } from '../lib/api'
+import dayjs from 'dayjs'
 
 type NewMemoryFormProps = {
   memory?: {
     coverUrl: string
     content: string
     id: string
-    createdAt: string
+    memoryDate: string
     isPublic: boolean
     createdBy?: {
       name: string
@@ -52,6 +53,9 @@ export function NewMemoryForm({ memory }: NewMemoryFormProps) {
           coverUrl,
           content: formData.get('content'),
           isPublic: formData.get('isPublic'),
+          memoryDate: new Date(
+            formData.get('memoryDate') as string,
+          ).toISOString(),
         },
         {
           headers: {
@@ -69,6 +73,9 @@ export function NewMemoryForm({ memory }: NewMemoryFormProps) {
         coverUrl: coverUrl || memory.coverUrl,
         content: formData.get('content'),
         isPublic: formData.get('isPublic'),
+        memoryDate: new Date(
+          formData.get('memoryDate') as string,
+        ).toISOString(),
       },
       {
         headers: {
@@ -118,6 +125,28 @@ export function NewMemoryForm({ memory }: NewMemoryFormProps) {
           />
           Tornar memória pública
         </label>
+      </div>
+
+      <div className="mt-4 flex flex-col py-2">
+        <label
+          htmlFor="memoryDate"
+          className="flex cursor-pointer items-center gap-2 rounded-lg text-xs text-gray-200 hover:text-gray-100 sm:text-sm"
+        >
+          <CalendarDays />
+          Data da memória
+        </label>
+
+        <input
+          type="date"
+          id="memoryDate"
+          name="memoryDate"
+          className="mt-4 flex cursor-pointer items-center self-start rounded-lg border border-gray-200 bg-transparent p-2 text-xs text-gray-200 hover:text-gray-100 sm:text-sm"
+          min="1899-01-01"
+          defaultValue={
+            memory?.memoryDate && dayjs(memory.memoryDate).format('YYYY-MM-DD')
+          }
+          max={new Date().toISOString().split('T')[0]}
+        />
       </div>
 
       <MediaPicker memory={memory} />

@@ -9,7 +9,7 @@ type MemoryProps = {
   coverUrl: string
   excerpt: string
   id: string
-  createdAt: string
+  memoryDate: string
 }
 
 async function getApi(token?: string) {

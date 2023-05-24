@@ -11,7 +11,7 @@ type MemoryProps = {
     coverUrl: string
     excerpt: string
     id: string
-    createdAt: string
+    memoryDate: string
     createdBy?: {
       name: string
       avatarUrl: string
@@ -25,7 +25,7 @@ export function Memory({ memory }: MemoryProps) {
     <div className="space-y-4">
       {!memory.createdBy ? (
         <time className="-ml-8 flex items-center gap-2 text-xs text-gray-100 before:h-px before:w-5 before:bg-gray-50 sm:text-sm">
-          {dayjs(memory.createdAt).format('D[ de ]MMMM[, ]YYYY')}
+          {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
         </time>
       ) : (
         <div className="-ml-8 flex items-center gap-2 text-xs text-gray-100 before:h-px before:w-5 before:bg-gray-50 sm:text-sm">
@@ -44,7 +44,7 @@ export function Memory({ memory }: MemoryProps) {
             <p className="max-w-[8.75rem] text-sm leading-snug">
               {memory.createdBy.name}{' '}
               <time className="text-xs text-gray-100 before:bg-gray-50 sm:text-sm">
-                {dayjs(memory.createdAt).format('D[ de ]MMMM[, ]YYYY')}
+                {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
               </time>
             </p>
           </Link>

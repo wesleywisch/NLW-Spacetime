@@ -11,7 +11,7 @@ type Memory = {
   coverUrl: string
   content: string
   id: string
-  createdAt: string
+  memoryDate: string
   isPublic: boolean
   createdBy?: {
     name: string
@@ -22,9 +22,10 @@ type Memory = {
 
 type MemoryProps = {
   memory: Memory
+  edit?: boolean
 }
 
-export function MemoryVisualization({ memory }: MemoryProps) {
+export function MemoryVisualization({ memory, edit }: MemoryProps) {
   return (
     <div className="space-y-4">
       <Link
@@ -34,32 +35,36 @@ export function MemoryVisualization({ memory }: MemoryProps) {
         <ChevronLeft className="h-4 w-4" /> Voltar à timeline
       </Link>
 
-      {!memory.createdBy ? (
-        <time className="-ml-8 flex items-center gap-2 text-xs text-gray-100 before:h-px before:w-5 before:bg-gray-50 sm:text-sm">
-          {dayjs(memory.createdAt).format('D[ de ]MMMM[, ]YYYY')}
-        </time>
-      ) : (
-        <div className="-ml-8 flex items-center gap-2 text-xs text-gray-100 before:h-px before:w-5 before:bg-gray-50 sm:text-sm">
-          <Link
-            href={`https://github.com/${memory.createdBy.githubLink}`}
-            className="text- flex items-center gap-3 py-3"
-          >
-            <Image
-              src={memory.createdBy.avatarUrl}
-              alt={memory.createdBy.name}
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full"
-            />
+      {!edit && (
+        <>
+          {!memory.createdBy ? (
+            <time className="-ml-8 flex items-center gap-2 text-xs text-gray-100 before:h-px before:w-5 before:bg-gray-50 sm:text-sm">
+              {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
+            </time>
+          ) : (
+            <div className="-ml-8 flex items-center gap-2 text-xs text-gray-100 before:h-px before:w-5 before:bg-gray-50 sm:text-sm">
+              <Link
+                href={`https://github.com/${memory.createdBy.githubLink}`}
+                className="text- flex items-center gap-3 py-3"
+              >
+                <Image
+                  src={memory.createdBy.avatarUrl}
+                  alt={memory.createdBy.name}
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-full"
+                />
 
-            <p className="max-w-[8.75rem] text-sm leading-snug">
-              {memory.createdBy.name}{' '}
-              <time className="text-xs text-gray-100 before:bg-gray-50 sm:text-sm">
-                {dayjs(memory.createdAt).format('D[ de ]MMMM[, ]YYYY')}
-              </time>
-            </p>
-          </Link>
-        </div>
+                <p className="max-w-[8.75rem] text-sm leading-snug">
+                  {memory.createdBy.name}{' '}
+                  <time className="text-xs text-gray-100 before:bg-gray-50 sm:text-sm">
+                    {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
+                  </time>
+                </p>
+              </Link>
+            </div>
+          )}
+        </>
       )}
 
       {!memory.createdBy ? (
