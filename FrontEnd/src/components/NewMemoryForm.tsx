@@ -1,7 +1,7 @@
 'use client'
-import { FormEvent } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, CalendarDays } from 'lucide-react'
+import { Camera, CalendarDays, InfoIcon, CheckIcon } from 'lucide-react'
 import Cookie from 'js-cookie'
 
 import { MediaPicker } from './MediaPicker'
@@ -23,34 +23,63 @@ type NewMemoryFormProps = {
   }
 }
 
+type Info = {
+  msg: string
+  type: 'error' | 'success' | 'null'
+}
+
 export function NewMemoryForm({ memory }: NewMemoryFormProps) {
   const router = useRouter()
 
+  const [info, setInfo] = useState<Info>({ type: 'null', msg: '' })
+
   async function handleCreateMemory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const token = Cookie.get('token')
 
-    const formData = new FormData(event.currentTarget)
+    try {
+      const token = Cookie.get('token')
 
-    const fileToUpload = formData.get('coverUrl')
-    const verify = formData.get('coverUrl') as { name: string }
+      const formData = new FormData(event.currentTarget)
 
-    let coverUrl = ''
+      const fileToUpload = formData.get('coverUrl')
+      const verify = formData.get('coverUrl') as { name: string }
 
-    if (verify.name && fileToUpload) {
-      const uploadFormData = new FormData()
-      uploadFormData.set('file', fileToUpload)
+      let coverUrl = ''
 
-      const uploadResponse = await api.post('/upload', uploadFormData)
+      if (verify.name && fileToUpload) {
+        const uploadFormData = new FormData()
+        uploadFormData.set('file', fileToUpload)
 
-      coverUrl = uploadResponse.data.fileUrl
-    }
+        const uploadResponse = await api.post('/upload', uploadFormData)
 
-    if (!memory) {
-      await api.post(
-        '/memories',
+        coverUrl = uploadResponse.data.fileUrl
+      }
+
+      if (!memory) {
+        await api.post(
+          '/memories',
+          {
+            coverUrl,
+            content: formData.get('content'),
+            isPublic: formData.get('isPublic'),
+            memoryDate: new Date(
+              formData.get('memoryDate') as string,
+            ).toISOString(),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        )
+
+        return router.push('/')
+      }
+
+      await api.put(
+        `/memories/${memory.id}`,
         {
-          coverUrl,
+          coverUrl: coverUrl || memory.coverUrl,
           content: formData.get('content'),
           isPublic: formData.get('isPublic'),
           memoryDate: new Date(
@@ -64,45 +93,68 @@ export function NewMemoryForm({ memory }: NewMemoryFormProps) {
         },
       )
 
-      return router.push('/')
+      setInfo({
+        type: 'success',
+        msg: 'Memória atualizada com sucesso!',
+      })
+    } catch (err) {
+      setInfo({
+        type: 'error',
+        msg: 'Não foi possível atualizar! Tente novamente.',
+      })
     }
-
-    await api.put(
-      `/memories/${memory.id}`,
-      {
-        coverUrl: coverUrl || memory.coverUrl,
-        content: formData.get('content'),
-        isPublic: formData.get('isPublic'),
-        memoryDate: new Date(
-          formData.get('memoryDate') as string,
-        ).toISOString(),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    )
   }
 
   async function handleDelete(id: string) {
     if (id) {
-      const token = Cookie.get('token')
+      try {
+        const token = Cookie.get('token')
 
-      const response = await api.delete(`/memories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+        const response = await api.delete(`/memories/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-      if (response.status === 200) {
-        router.push('/')
+        if (response.status === 200) {
+          router.push('/')
+        }
+      } catch (err) {
+        setInfo({
+          type: 'error',
+          msg: 'Não foi possível deletar! Tente novamente.',
+        })
       }
     }
   }
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInfo({ type: 'null', msg: '' })
+    }, 5000)
+
+    return () => clearTimeout(timer)
+  }, [info])
+
   return (
-    <form onSubmit={handleCreateMemory} className="flex flex-1 flex-col gap-2">
+    <form
+      onSubmit={handleCreateMemory}
+      className="relative flex flex-1 flex-col gap-2"
+    >
+      {info && info.type === 'error' && (
+        <div className="absolute right-3 top-8 flex animate-info items-center gap-2 rounded-lg bg-gray-800 p-2 md:top-4 lg:top-11">
+          <InfoIcon className="h-3 w-3 text-red-800 md:h-5 md:w-5" />
+          <span className="md:text-md text-xs text-red-700">{info.msg}</span>
+        </div>
+      )}
+
+      {info && info.type === 'success' && (
+        <div className="absolute right-3 top-8 flex animate-info items-center gap-2 rounded-lg bg-gray-800 p-2 md:top-4 lg:top-11">
+          <CheckIcon className="h-3 w-3 text-green-800 md:h-5 md:w-5" />
+          <span className="md:text-md text-xs text-green-700">{info.msg}</span>
+        </div>
+      )}
+
       <div className="flex items-center gap-4">
         <label
           htmlFor="media"
@@ -169,8 +221,8 @@ export function NewMemoryForm({ memory }: NewMemoryFormProps) {
 
         {memory && (
           <button
+            type="button"
             onClick={() => handleDelete(memory.id)}
-            type="submit"
             className="mt-5 rounded-full bg-red-500 px-3 py-2 font-alt text-xs uppercase leading-none text-black hover:bg-red-600 md:px-5 md:py-3 md:text-sm"
           >
             Deletar

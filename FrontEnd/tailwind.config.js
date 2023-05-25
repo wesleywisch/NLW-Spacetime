@@ -63,6 +63,15 @@ module.exports = {
         '5xl': '2.5rem',
       },
     },
+    animation: {
+      info: 'info 1s linear',
+    },
+    keyframes: {
+      info: {
+        '0%': { opacity: 0 },
+        '100%': { opacity: 1 },
+      },
+    },
   },
   plugins: [require('@tailwindcss/forms')],
 }
