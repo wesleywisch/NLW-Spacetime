@@ -1,13 +1,8 @@
-import { View, TouchableOpacity, ScrollView, Text, Image } from 'react-native'
+import { View, ScrollView, Text } from 'react-native'
 import { useState, useEffect } from 'react'
-import { Link } from 'expo-router'
-import Icon from '@expo/vector-icons/Feather'
-import dayjs from 'dayjs'
-import ptBr from 'dayjs/locale/pt-br'
 
 import { api } from '../../../src/lib/api'
-
-dayjs.locale(ptBr)
+import { Memory } from '../../../src/components/Memory'
 
 type MemoryProps = {
   coverUrl: string
@@ -32,42 +27,12 @@ export default function MemoriesPublic() {
   return (
     <ScrollView className="flex-1">
       <View className="mt-6 space-y-10">
-        <View className="flex items-center">
+        <View className="mb-5 flex items-center">
           <Text className="text-lg text-gray-200">Memórias públicas</Text>
         </View>
 
         {memories.map((memory) => (
-          <View className="space-y-4" key={memory.id}>
-            <View className="flex-row items-center gap-2">
-              <View className="h-px w-5 bg-gray-50" />
-              <Text className="font-body text-xs text-gray-100">
-                {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
-              </Text>
-            </View>
-
-            <View className="space-y-4 px-8">
-              <Image
-                source={{
-                  uri: memory.coverUrl,
-                }}
-                alt=""
-                className="aspect-video w-full rounded-lg"
-              />
-
-              <Text className="font-body text-base leading-relaxed text-gray-100">
-                {memory.excerpt}
-              </Text>
-
-              <Link href={`/memories/public/${memory.id}`} asChild>
-                <TouchableOpacity className="flex-row items-center gap-2">
-                  <Text className="font-body text-sm text-gray-200">
-                    Ler mais
-                  </Text>
-                  <Icon name="arrow-right" size={16} color="#9e9ea0" />
-                </TouchableOpacity>
-              </Link>
-            </View>
-          </View>
+          <Memory key={memory.id} memory={memory} />
         ))}
       </View>
     </ScrollView>

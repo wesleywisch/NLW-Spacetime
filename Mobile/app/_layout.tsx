@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { ImageBackground } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
-import { SplashScreen, Stack, Redirect } from 'expo-router'
+import { SplashScreen, Stack, useRouter } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 import { styled } from 'nativewind'
 
@@ -18,19 +18,19 @@ import Stripes from '../src/assets/stripes.svg'
 const StyledStripes = styled(Stripes)
 
 export default function Layout() {
-  const [isUserAuthenticated, setIsUserAuthenticated] = useState<
-    null | boolean
-  >(null)
-
   const [hasLoadedFonts] = useFonts({
     Roboto_400Regular,
     Roboto_700Bold,
     BaiJamjuree_700Bold,
   })
 
+  const router = useRouter()
+
   useEffect(() => {
     SecureStore.getItemAsync('token').then((token) => {
-      setIsUserAuthenticated(!!token)
+      if (token) {
+        router.push('/memories')
+      }
     })
   }, [])
 
@@ -54,8 +54,7 @@ export default function Layout() {
           animation: 'fade',
         }}
       >
-        <Stack.Screen name="index" redirect={isUserAuthenticated} />
-        {isUserAuthenticated && <Redirect href="/memories" />}
+        <Stack.Screen name="index" />
       </Stack>
     </ImageBackground>
   )

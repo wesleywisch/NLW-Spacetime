@@ -30,29 +30,32 @@ export default function App() {
   )
 
   async function handleGithubOAuthCode(code: string) {
-    const response = await api.post('/register', {
-      code,
-    })
+    // const response = await api.post('/register', {
+    //   code,
+    // })
 
-    const { token } = response.data
+    // const { token } = response.data
 
-    await SecureStore.setItemAsync('token', token)
+    await SecureStore.setItemAsync(
+      'token',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiV2VzbGV5IFdpc2NoIExvcmVuemV0aSIsImF2YXRhclVybCI6Imh0dHBzOi8vYXZhdGFycy5naXRodWJ1c2VyY29udGVudC5jb20vdS83OTE1OTQ4Nz92PTQiLCJzdWIiOiJjOWUwYTdiNS0yNGNjLTRlZWQtYWQwNi1jMWNjYWI4OTU4M2EiLCJpYXQiOjE2ODQ4NjM3MTYsImV4cCI6MTY4NTcyNzcxNn0.MpQcKrbpAP--O5XotF3drPZk-LN7z25PhilgvofJ8xs',
+    )
     router.push('/memories')
   }
 
-  useEffect(() => {
-    // console.log(
-    //   makeRedirectUri({
-    //     scheme: 'nlwspacetime',
-    //   }),
-    // )
+  // useEffect(() => {
+  //   // console.log(
+  //   //   makeRedirectUri({
+  //   //     scheme: 'nlwspacetime',
+  //   //   }),
+  //   // )
 
-    if (response?.type === 'success') {
-      const { code } = response.params
+  //   if (response?.type === 'success') {
+  //     const { code } = response.params
 
-      handleGithubOAuthCode(code)
-    }
-  }, [response])
+  //     handleGithubOAuthCode(code)
+  //   }
+  // }, [response])
 
   return (
     <View className="flex-1 items-center px-10 py-10">
@@ -72,7 +75,7 @@ export default function App() {
         <TouchableOpacity
           activeOpacity={0.7}
           className="rounded-full bg-green-500 px-5 py-2"
-          onPress={() => signInWithGithub()}
+          onPress={() => handleGithubOAuthCode('1')}
         >
           <Text className="font-alt text-sm uppercase text-black">
             Cadastrar lembrança

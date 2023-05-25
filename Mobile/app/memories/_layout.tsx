@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ImageBackground, TouchableOpacity, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
-import { Link, Redirect, Stack, useRouter } from 'expo-router'
+import { Link, Stack, useRouter, usePathname, useNavigation } from 'expo-router'
 import { styled } from 'nativewind'
 import Icon from '@expo/vector-icons/Feather'
 import * as SecureStore from 'expo-secure-store'
@@ -8,8 +10,6 @@ import * as SecureStore from 'expo-secure-store'
 import blurBg from '../../src/assets/bg-blur.png'
 import Stripes from '../../src/assets/stripes.svg'
 import NLWLogo from '../../src/assets/nlw-spacetime-logo.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useEffect, useState } from 'react'
 
 const StyledStripes = styled(Stripes)
 
@@ -19,6 +19,9 @@ export default function Layout() {
   >(null)
 
   const router = useRouter()
+  const navigation = useNavigation()
+  const pathname = usePathname()
+
   const { bottom, top } = useSafeAreaInsets()
 
   async function signOut() {
@@ -29,6 +32,9 @@ export default function Layout() {
   useEffect(() => {
     SecureStore.getItemAsync('token').then((token) => {
       setIsUserAuthenticated(!!token)
+      if (!token) {
+        router.push('/')
+      }
     })
   }, [])
 
@@ -48,18 +54,29 @@ export default function Layout() {
         <NLWLogo />
 
         <View className="flex-row gap-2">
-          <TouchableOpacity
-            onPress={signOut}
-            className="h-10 w-10 items-center justify-center rounded-full bg-red-500"
-          >
-            <Icon name="log-out" size={16} color="#000" />
-          </TouchableOpacity>
-
-          <Link href="/memories/new" asChild>
-            <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-green-500">
-              <Icon name="plus" size={16} color="#000" />
+          {isUserAuthenticated && (
+            <TouchableOpacity
+              onPress={signOut}
+              className="h-10 w-10 items-center justify-center rounded-full bg-red-500"
+            >
+              <Icon name="log-out" size={16} color="#000" />
             </TouchableOpacity>
-          </Link>
+          )}
+
+          {pathname === '/memories' ? (
+            <Link href="/memories/new" asChild>
+              <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-green-500">
+                <Icon name="plus" size={16} color="#000" />
+              </TouchableOpacity>
+            </Link>
+          ) : (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              className="h-10 w-10 items-center justify-center rounded-full bg-purple-600"
+            >
+              <Icon name="arrow-left" size={16} color="#000" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -72,7 +89,6 @@ export default function Layout() {
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="new" />
-        {!isUserAuthenticated && <Redirect href="/" />}
       </Stack>
     </ImageBackground>
   )

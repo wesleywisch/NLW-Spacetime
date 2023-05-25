@@ -1,22 +1,18 @@
-import { View, TouchableOpacity, ScrollView, Text, Image } from 'react-native'
+import { ScrollView } from 'react-native'
 import { useState, useEffect } from 'react'
-import { Link, useRouter, useSearchParams } from 'expo-router'
-import Icon from '@expo/vector-icons/Feather'
+import { useSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as SecureStore from 'expo-secure-store'
-import dayjs from 'dayjs'
-import ptBr from 'dayjs/locale/pt-br'
 
-import NLWLogo from '../../../src/assets/nlw-spacetime-logo.svg'
+import { VisualizationMemory } from '../../../src/components/VisualizationMemory'
 
 import { api } from '../../../src/lib/api'
 
-dayjs.locale(ptBr)
-
 type MemoryProps = {
   coverUrl: string
-  excerpt: string
+  content: string
   id: string
+  isPublic: boolean
   memoryDate: string
 }
 
@@ -24,12 +20,30 @@ export default function Memories() {
   const { bottom, top } = useSafeAreaInsets()
   const params = useSearchParams()
 
+  const [memory, setMemory] = useState<MemoryProps>()
+
+  async function loadMemories() {
+    const token = await SecureStore.getItemAsync('token')
+
+    const response = await api.get(`/memories/${params.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    setMemory(response.data)
+  }
+
+  useEffect(() => {
+    loadMemories()
+  }, [])
+
   return (
     <ScrollView
       className="flex-1"
       contentContainerStyle={{ paddingBottom: bottom, paddingTop: top }}
     >
-      <Text className="text-lg text-red-800">{params.id}</Text>
+      {memory && <VisualizationMemory memory={memory} edit />}
     </ScrollView>
   )
 }
