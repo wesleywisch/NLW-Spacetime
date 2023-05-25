@@ -7,8 +7,10 @@ import {
   Switch,
   Platform,
 } from 'react-native'
-import Icon from '@expo/vector-icons/Feather'
+import { useState } from 'react'
 import { useRouter } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
+import Icon from '@expo/vector-icons/Feather'
 import * as SecureStore from 'expo-secure-store'
 import * as ImagePicker from 'expo-image-picker'
 import DateTimePicker from '@react-native-community/datetimepicker'
@@ -16,7 +18,6 @@ import dayjs from 'dayjs'
 import ptBr from 'dayjs/locale/pt-br'
 
 import { api } from '../lib/api'
-import { useState } from 'react'
 
 dayjs.locale(ptBr)
 
@@ -27,17 +28,35 @@ type MemoryProps = {
     id: string
     memoryDate: string
     isPublic: boolean
+    createdBy?: {
+      avatarUrl: string
+      githubLink: string
+      name: string
+    }
   }
   edit?: boolean
 }
 
+type Info = {
+  msg: string
+  type: 'error' | 'success' | 'null'
+}
+
 export function VisualizationMemory({ memory, edit }: MemoryProps) {
   const router = useRouter()
+
   const [content, setContent] = useState(memory.content)
   const [isPublic, setIsPublic] = useState(memory.isPublic)
   const [memoryDate, setMemoryDate] = useState(new Date(memory.memoryDate))
   const [newImage, setNewImage] = useState('')
   const [memoryDateOpen, setMemoryDateOpen] = useState(false)
+  const [info, setInfo] = useState<Info>({ type: 'null', msg: '' })
+
+  async function handleOpenGithubBrowser() {
+    await WebBrowser.openBrowserAsync(
+      `https://github.com/${memory.createdBy.githubLink}`,
+    )
+  }
 
   async function openImagePicker() {
     try {
@@ -55,56 +74,74 @@ export function VisualizationMemory({ memory, edit }: MemoryProps) {
   }
 
   async function handleUpdateMemory() {
-    const token = await SecureStore.getItemAsync('token')
+    try {
+      const token = await SecureStore.getItemAsync('token')
 
-    let coverUrl = ''
+      let coverUrl = ''
 
-    if (newImage) {
-      const uploadFormData = new FormData()
+      if (newImage) {
+        const uploadFormData = new FormData()
 
-      uploadFormData.append('file', {
-        uri: newImage,
-        name: 'image.jpg',
-        type: 'image/jpeg',
-      } as any)
+        uploadFormData.append('file', {
+          uri: newImage,
+          name: 'image.jpg',
+          type: 'image/jpeg',
+        } as any)
 
-      const uploadResponse = await api.post('upload', uploadFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+        const uploadResponse = await api.post('upload', uploadFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+
+        coverUrl = uploadResponse.data.fileUrl
+      }
+
+      await api.put(
+        `/memories/${memory.id}`,
+        {
+          coverUrl: coverUrl || memory.coverUrl,
+          content,
+          isPublic,
+          memoryDate,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+
+      setInfo({
+        type: 'success',
+        msg: 'Atualizado com sucesso!',
       })
-
-      coverUrl = uploadResponse.data.fileUrl
+    } catch (err) {
+      setInfo({
+        type: 'error',
+        msg: 'Não foi possível atualizar! Tente novamente.',
+      })
     }
-
-    await api.put(
-      `/memories/${memory.id}`,
-      {
-        coverUrl: coverUrl || memory.coverUrl,
-        content,
-        isPublic,
-        memoryDate,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    )
   }
 
   async function handleDelete(id: string) {
     if (id) {
-      const token = await SecureStore.getItemAsync('token')
+      try {
+        const token = await SecureStore.getItemAsync('token')
+        const response = await api.delete(`/memories/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-      const response = await api.delete(`/memories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (response.status === 200) {
-        router.push('/')
+        if (response.status === 200) {
+          router.push('/')
+        }
+      } catch (err) {
+        setInfo({
+          type: 'error',
+          msg: 'Não foi possível deletar! Tente novamente.',
+        })
       }
     }
   }
@@ -159,12 +196,39 @@ export function VisualizationMemory({ memory, edit }: MemoryProps) {
             )}
           </View>
         ) : (
-          <View className="flex-row items-center gap-2">
-            <View className="h-px w-5 bg-gray-50" />
-            <Text className="font-body text-xs text-gray-100">
-              {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
-            </Text>
-          </View>
+          <>
+            {!memory.createdBy ? (
+              <View className="flex-row items-center gap-2">
+                <View className="h-px w-5 bg-gray-50" />
+                <Text className="font-body text-xs text-gray-100">
+                  {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
+                </Text>
+              </View>
+            ) : (
+              <View className="flex flex-row items-center gap-2 text-xs text-gray-100">
+                <View className="h-px w-5 bg-gray-50" />
+                <TouchableOpacity
+                  className="flex-row items-center pl-2"
+                  onPress={handleOpenGithubBrowser}
+                >
+                  <Image
+                    source={{ uri: memory.createdBy.avatarUrl }}
+                    alt={memory.createdBy.name}
+                    className="h-10 w-10 rounded-full"
+                  />
+
+                  <View className="pl-3">
+                    <Text className="text-md text-gray-200">
+                      {memory.createdBy.name}{' '}
+                    </Text>
+                    <Text className="mt-1 text-xs text-gray-100">
+                      {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
         )}
 
         <View className="space-y-4 px-8">
@@ -217,6 +281,20 @@ export function VisualizationMemory({ memory, edit }: MemoryProps) {
           >
             <Text>Deletar</Text>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {info && info.type === 'error' && (
+        <View className="flex-row items-center justify-center gap-2">
+          <Icon name="info" size={20} color="red" />
+          <Text className="text-md text-red-400">{info.msg}</Text>
+        </View>
+      )}
+
+      {info && info.type === 'success' && (
+        <View className="flex-row items-center justify-center gap-2">
+          <Icon name="check" size={20} color="green" />
+          <Text className="text-md text-green-400">{info.msg}</Text>
         </View>
       )}
     </View>

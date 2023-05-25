@@ -87,7 +87,10 @@ export default function NewMemory() {
   }
 
   return (
-    <ScrollView className="flex-1 px-8">
+    <ScrollView
+      className="flex-1 px-8"
+      contentContainerStyle={{ paddingBottom: 30 }}
+    >
       <View className="mt-6 space-y-6">
         <View className="flex-row items-center gap-2">
           <Switch

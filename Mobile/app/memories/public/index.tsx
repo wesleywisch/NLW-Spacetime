@@ -9,6 +9,11 @@ type MemoryProps = {
   excerpt: string
   id: string
   memoryDate: string
+  createdBy: {
+    avatarUrl: string
+    githubLink: string
+    name: string
+  }
 }
 
 export default function MemoriesPublic() {
@@ -25,7 +30,10 @@ export default function MemoriesPublic() {
   }, [])
 
   return (
-    <ScrollView className="flex-1">
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{ paddingBottom: 30 }}
+    >
       <View className="mt-6 space-y-10">
         <View className="mb-5 flex items-center">
           <Text className="text-lg text-gray-200">Memórias públicas</Text>

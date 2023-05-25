@@ -32,7 +32,10 @@ export default function Memories() {
   }, [])
 
   return (
-    <ScrollView className="flex-1">
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{ paddingBottom: 30 }}
+    >
       <View className="mt-6 space-y-10">
         {memories.map((memory) => (
           <Memory key={memory.id} memory={memory} />
