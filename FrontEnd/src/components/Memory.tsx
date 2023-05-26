@@ -41,7 +41,7 @@ export function Memory({ memory }: MemoryProps) {
               className="h-10 w-10 rounded-full"
             />
 
-            <p className="max-w-[8.75rem] text-sm leading-snug">
+            <p className="flex flex-col text-sm leading-snug">
               {memory.createdBy.name}{' '}
               <time className="text-xs text-gray-100 before:bg-gray-50 sm:text-sm">
                 {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}

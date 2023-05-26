@@ -114,7 +114,7 @@ export function VisualizationMemory({ memory, edit }: MemoryProps) {
 
       setInfo({
         type: 'success',
-        msg: 'Atualizado com sucesso!',
+        msg: 'Memória atualizada com sucesso!',
       })
     } catch (err) {
       setInfo({

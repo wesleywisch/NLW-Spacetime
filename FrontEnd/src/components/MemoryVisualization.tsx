@@ -55,7 +55,7 @@ export function MemoryVisualization({ memory, edit }: MemoryProps) {
                   className="h-10 w-10 rounded-full"
                 />
 
-                <p className="max-w-[8.75rem] text-sm leading-snug">
+                <p className="flex flex-col text-sm leading-snug">
                   {memory.createdBy.name}{' '}
                   <time className="text-xs text-gray-100 before:bg-gray-50 sm:text-sm">
                     {dayjs(memory.memoryDate).format('D[ de ]MMMM[, ]YYYY')}
@@ -72,8 +72,8 @@ export function MemoryVisualization({ memory, edit }: MemoryProps) {
       ) : (
         <div className="flex flex-1 flex-col gap-2">
           <Image
-            width={100}
-            height={100}
+            width={400}
+            height={400}
             src={memory.coverUrl}
             alt="Preview"
             className="aspect-video w-full rounded-lg object-cover"
